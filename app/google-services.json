@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "736045374388",
+    "firebase_url": "https://tesco-256810.firebaseio.com",
+    "project_id": "tesco-256810",
+    "storage_bucket": "tesco-256810.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:736045374388:android:4729b8046aa047456bb0e1",
+        "android_client_info": {
+          "package_name": "com.pactera.tesko"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "736045374388-10q80d2cap60pnvjsul65kj0k33q6oft.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pactera.tesko",
+            "certificate_hash": "b5175a71ccd0ba558ade9ccd0de0795edab11bdf"
+          }
+        },
+        {
+          "client_id": "736045374388-phq1vqnfvb1vlj45aav9ll1ohg2qu3jn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrm3eU-Cpt3TQhdx7QcUhUjYOA3d7GWW8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "736045374388-phq1vqnfvb1vlj45aav9ll1ohg2qu3jn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

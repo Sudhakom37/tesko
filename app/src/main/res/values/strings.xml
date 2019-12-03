@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Tesco Lotus</string>
+
+    <string name="gcm_project_id">tesco-256810</string>
+    <string name="gcm_project_no">736045374388</string>
+    <string name="gcm_api_key">AIzaSyBV_PhTWLMPt57umAvh7c-LfGtDkv2DvwI</string>
+    <string name="gcm_sha1">B5:17:5A:71:CC:D0:BA:55:8A:DE:9C:CD:0D:E0:79:5E:DA:B1:1B:DF</string>
+    <string name="thresold_msg">Current threshold limit has reach</string>
+    <string name="thresold_item">Threshold limit has reach</string>
+
+    <string name="copy_right_text">Powered by Pactera India Pvt.Ltd</string>
+    <string name="location_updated">Location Updated: %1$s</string>
+</resources>
+
