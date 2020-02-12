@@ -1,11 +1,15 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    android:orientation="vertical"
     tools:context=".MainActivity">
+    <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -19,6 +23,15 @@
         <include layout="@layout/custom_action_bar" />
 
     </android.support.v7.widget.Toolbar>
+    <TextView android:id="@+id/tv_view_msg"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="@color/blue"
+        android:text="@string/app_name"
+        android:textColor="#FFF"
+        android:textSize="12sp"
+        android:gravity="center_vertical"
+        />
 
     <RelativeLayout
         android:id="@+id/lnrTop"
@@ -26,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="8dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -52,7 +65,7 @@
         <android.support.v4.view.ViewPager
             android:id="@+id/viewpager"
             android:layout_width="match_parent"
-            android:layout_height="380dp"
+            android:layout_height="440dp"
             android:layout_marginTop="20dp">
 
         </android.support.v4.view.ViewPager>
@@ -89,20 +102,24 @@
         </RadioGroup>
     </FrameLayout>
 
+
+</LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="35dp"
-        android:layout_below="@+id/viewpager"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="0dp"
-        android:gravity="center_vertical"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="10dp"
         android:orientation="horizontal"
         android:weightSum="4">
 
 
         <RelativeLayout
-            android:id="@+id/rlvtHome"
+            android:id="@+id/rl_viewQ1_Q15"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_marginRight="10dp"
@@ -119,7 +136,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/rlvtHr"
+            android:id="@+id/rl_viewQ16_30"
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_marginRight="10dp"
@@ -169,5 +186,4 @@
         </RelativeLayout>
 
     </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

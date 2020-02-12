@@ -2,7 +2,6 @@ package com.pactera.tesko;
 
 import android.os.Bundle;
 import android.support.annotation.Keep;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
@@ -15,9 +14,11 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
+import com.pactera.Util.MySharedPreference;
+import com.pactera.Util.PrefKeys;
 import com.pactera.adapter.QueueAnalysisAdapter;
-import com.pactera.fragment.FirstFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,19 +31,20 @@ public class QueueAnalysisActivity extends FragmentActivity implements ActionBar
     private Spinner mSpinner;
     RelativeLayout rlvtHome,rlvtExit;
     QueueAnalysisAdapter adapter;
-
+    TextView tv_view_msg ;
+    MySharedPreference preference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_queue_analysis);
-
+        tv_view_msg = findViewById(R.id.tv_view_msg);
         viewPager =  findViewById(R.id.viewpager);
-        rlvtHome = findViewById(R.id.rlvtHome);
+        rlvtHome = findViewById(R.id.rl_viewQ1_Q15);
         adapter = new QueueAnalysisAdapter(getSupportFragmentManager());
         rlvtExit = findViewById(R.id.rlvtExit);
         viewPager.setAdapter(adapter);
-
+        preference = new MySharedPreference(this);
 //
 //        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
 //        tabLayout.setupWithViewPager(pager, true);
@@ -54,6 +56,14 @@ public class QueueAnalysisActivity extends FragmentActivity implements ActionBar
         mSpinner =  findViewById(R.id.spnerInterval);
 
         mSpinner.setOnItemSelectedListener(this);
+
+        if(preference.getPref(PrefKeys.QUEUE_NAME).equalsIgnoreCase("Q1")){
+            tv_view_msg.setBackgroundColor(getResources().getColor(R.color.blue));
+            tv_view_msg.setText("You have currently selected to view status of Queues 1 - 15");
+        }else{
+            tv_view_msg.setBackgroundColor(getResources().getColor(R.color.pactera_red));
+            tv_view_msg.setText("You have currently selected to view status of Queues 16 - 30");
+        }
 
         // Spinner Drop down elements
         List<String> categories = new ArrayList<>();
@@ -126,7 +136,7 @@ public class QueueAnalysisActivity extends FragmentActivity implements ActionBar
 
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
-        RadioButton checkedRadioButton = (RadioButton) radioGroup.findViewById(checkedId);
+        RadioButton checkedRadioButton =  radioGroup.findViewById(checkedId);
         // get index of checked radio button
         int index = radioGroup.indexOfChild(checkedRadioButton);
 

@@ -13,11 +13,11 @@ import android.support.v7.app.AppCompatActivity;
 @Keep
 public class SplashActivity extends AppCompatActivity {
     //splash time
-    private static int SPLASH_TIME_OUT_CACHE = 2000;
-    private boolean isLogin, isMobileVerified;
-    private String userName;
-    private String password;
-    public static boolean isComeFromStack = false;
+    private static int SPLASH_TIME_OUT_CACHE = 2000 ;
+    private boolean isLogin, isMobileVerified ;
+    private String userName ;
+    private String password ;
+    public static boolean isComeFromStack = false ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

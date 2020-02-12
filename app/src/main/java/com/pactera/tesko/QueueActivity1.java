@@ -3,6 +3,7 @@ package com.pactera.tesko;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -11,20 +12,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
-import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
-import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -32,7 +33,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ajts.androidmads.library.SQLiteToExcel;
 import com.github.mikephil.charting.charts.BarChart;
@@ -46,75 +49,78 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
+
 import com.nabinbhandari.android.permissions.PermissionHandler;
 import com.nabinbhandari.android.permissions.Permissions;
+
 import com.pactera.TescoApp;
 import com.pactera.Util.MySharedPreference;
+import com.pactera.Util.MyValueFormatter;
 import com.pactera.Util.PrefKeys;
-import com.pactera.Util.StackedValueFormatter;
 import com.pactera.adapter.NotificationAdapter;
 import com.pactera.api.RetrofitInstance;
 import com.pactera.custom.MyBarDataSet;
-import com.pactera.custom.StackedBarDataset;
 import com.pactera.gcm.RegistrationIntentService;
 import com.pactera.model.GraphModel;
 import com.pactera.model.Queue;
 import com.pactera.room.Notification;
 import com.pactera.room.NotificationViewModel;
 import com.pactera.sync.LocationUpdatesService;
+
 import com.pushbots.push.Pushbots;
 
+
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
-import android.widget.Spinner;
-
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 import static com.pactera.sync.LocationUpdatesService.ACTION_RESP;
 
-public class MainActivity extends FragmentActivity implements View.OnClickListener, OnChartValueSelectedListener, AdapterView.OnItemSelectedListener {
+public class QueueActivity1 extends FragmentActivity implements View.OnClickListener, OnChartValueSelectedListener, AdapterView.OnItemSelectedListener {
 
     private BarChart chart;
-    private RecyclerView mReclNotfHistory;
-    private NotificationAdapter mNotifAdapter;
-    private List<String> mNotfList = new ArrayList<>();
-    private TextView mTxtNoHistory, mTxtNotif;
+    private RecyclerView mRecNotHistory;
+    private NotificationAdapter mNotIfAdapter;
+    private List<String> mNotIfList = new ArrayList<>();
+    private TextView mTxtNoHistory, mTxtNotIf;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String MESSAGE_RECEIVED = "message_received";
     private UIBroadCastReceiver uiBroadCastReceiver;
-    //    String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/instinctcoder/readwrite/";
     String path = Environment.getExternalStorageDirectory() + File.separator + "Tesco/";
     Handler handler;
-    private String TAG = "MainActivity";
+    private String TAG = "QueueActivity1";
     String[] timeSpinnerValues = {"Select", "1 min", "2 min", "5 min", "10 min"};
     Spinner timeSpinner;
     Button btnAnalytic;
     List<String> xAxisValues;
     NotificationViewModel viewModel;
     List<Notification> notificationList;
-    TextView queue_lessthan_3;
-    RelativeLayout rl_viewQ1_Q15,rl_viewQ16_30;
-    Button tv_viewQ1_Q15,tv_viewQ16_30;
+    TextView queue_lessThan_3;
+    RelativeLayout rl_viewQ1_Q15, rl_viewQ16_30;
     AlarmManager alarmManager;
     PendingIntent pendingIntent;
 
     private MyReceiver myReceiver;
     MySharedPreference preference;
+
+    String queueName = "Q1";
+    int time = 1;
     // A reference to the service used to get location updates.
     private LocationUpdatesService mService = null;
 
@@ -140,58 +146,42 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_new);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        preference = new MySharedPreference(this);
+        setContentView(R.layout.activity_queue1);
+        //Toolbar toolbar = findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
-        //myReceiver = new MyReceiver();
-        mReclNotfHistory = findViewById(R.id.reclNotfHistory);
+        myReceiver = new MyReceiver();
+        mRecNotHistory = findViewById(R.id.reclNotfHistory);
         mTxtNoHistory = findViewById(R.id.txtNoHistory);
-        mTxtNotif = findViewById(R.id.txtNotif);
+        mTxtNotIf = findViewById(R.id.txtNotif);
         rl_viewQ1_Q15 = findViewById(R.id.rl_viewQ1_Q15);
         rl_viewQ16_30 = findViewById(R.id.rl_viewQ16_30);
-        tv_viewQ1_Q15 = findViewById(R.id.tv_viewQ1_Q15);
-        tv_viewQ16_30 = findViewById(R.id.tv_viewQ16_30);
-        queue_lessthan_3 = findViewById(R.id.queue_lessthan_3);
-        RelativeLayout mrlvtExit = findViewById(R.id.rlvtExit);
-        mrlvtExit.setOnClickListener(this);
-        queue_lessthan_3.setText("<3");
+        queue_lessThan_3 = findViewById(R.id.queue_lessthan_3);
+        RelativeLayout mRlExit = findViewById(R.id.rlvtExit);
+        mRlExit.setOnClickListener(this);
+        queue_lessThan_3.setText("<3");
         viewModel = ViewModelProviders.of(this).get(NotificationViewModel.class);
+        rl_viewQ1_Q15.setOnClickListener(view -> finish());
         //viewModel.getBarChart("2");
-        chart = findViewById(R.id.chart1);
+        chart = findViewById(R.id.bar_chart);
         timeSpinner = findViewById(R.id.sp);
         btnAnalytic = findViewById(R.id.btn_analytic);
         Log.d(TAG, "onCreate: path " + path);
         alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        //exportDbToExcel();
-        Log.d(TAG, "exportDbToExcel: ");
-        btnAnalytic.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, QueueAnalysisActivity.class)));
-        mNotfList = new ArrayList<>();
+        queueName = getIntent().getStringExtra(PrefKeys.QUEUE_NAME);
+        Log.d(TAG, "onCreate: queueName " + queueName);
+        preference = new MySharedPreference(this);
+        setUpChart(chart);
+
+        btnAnalytic.setOnClickListener(view -> startActivity(new Intent(QueueActivity1.this, QueueAnalysisActivity.class)));
+        mNotIfList = new ArrayList<>();
         if (!checkPermissions()) {
-            Permissions.check(this, Manifest.permission.ACCESS_FINE_LOCATION, null, new PermissionHandler() {
+            Permissions.check(this, android.Manifest.permission.ACCESS_FINE_LOCATION, null, new PermissionHandler() {
                 @Override
                 public void onGranted() {
 
                 }
             });
         }
-
-        tv_viewQ1_Q15.setOnClickListener(view -> {
-            preference.setPref(PrefKeys.QUEUE_NAME,"Q1");
-            Intent intent = new Intent(MainActivity.this,QueueActivity1.class);
-            intent.putExtra(PrefKeys.QUEUE_NAME,"Q1");
-            startActivity(intent);
-
-        });
-        tv_viewQ16_30.setOnClickListener(view -> {
-            preference.setPref(PrefKeys.QUEUE_NAME,"Q3");
-            Intent intent = new Intent(MainActivity.this,QueueActivity1.class);
-            intent.putExtra(PrefKeys.QUEUE_NAME,"Q3");
-            startActivity(intent);
-
-        });
-
-
         Intent intent = getIntent();
         if (intent != null) {
             if (intent.getAction() != null) {
@@ -207,78 +197,58 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             Log.e("SyncActivity", "intent != null : ");
         }
 
-        prepareNotificaitonList();
+        prepareNotificationList();
         registerForGCM();
 
-        uiBroadCastReceiver = new UIBroadCastReceiver();
-        registerUIBroadCastReceiver(uiBroadCastReceiver, TescoApp.UI_BROADCAST_RECEIVER_NAME);
+        uiBroadCastReceiver = new QueueActivity1.UIBroadCastReceiver();
+        //registerUIBroadCastReceiver(uiBroadCastReceiver, TescoApp.UI_BROADCAST_RECEIVER_NAME);
 
         //Register for Push Notifications
         Pushbots.sharedInstance().registerForRemoteNotifications();
-
+        getBarChart(1, queueName);
         setTimeSpinner();
-        //setAlarm(1);
+        setAlarm(1);
 
     }
 
     private void observeData() {
-        mNotfList.clear();
+        mNotIfList.clear();
         viewModel.getAllWords().observe(this, notifications -> {
             notificationList = notifications;
 
             if (notifications != null) {
                 for (Notification notification : notifications) {
-                    mNotfList.add(notification.getNotificationText());
-                    Log.d(TAG, "observeData: "+notification.getNotificationText()+" Date "+notification.getDate());
+                    mNotIfList.add(notification.getNotificationText());
+                    Log.d(TAG, "observeData: " + notification.getNotificationText() + " Date " + notification.getDate());
                 }
             }
-            prepareNotificaitonList();
-            mNotifAdapter = new NotificationAdapter(mNotfList);
-            LinearLayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-            mReclNotfHistory.setLayoutManager(mLayoutManager);
-            mReclNotfHistory.setItemAnimator(new DefaultItemAnimator());
-            mReclNotfHistory.setAdapter(mNotifAdapter);
-            mNotifAdapter.notifyDataSetChanged();
-
+            prepareNotificationList();
+            mNotIfAdapter = new NotificationAdapter(mNotIfList);
+            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+            mRecNotHistory.setLayoutManager(mLayoutManager);
+            mRecNotHistory.setItemAnimator(new DefaultItemAnimator());
+            mRecNotHistory.setAdapter(mNotIfAdapter);
+            mNotIfAdapter.notifyDataSetChanged();
+            //runOnUiThread(() -> exportData(notificationList));
 
         });
 
     }
 
-  /*  private void setAlarm(int time) {
+    private void setAlarm(int time) {
         Log.d(TAG, "AlarmReceiver set");
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 60 * time, pendingIntent);
 
-    }*/
-
-    private void exportDbToExcel(){
-        Log.d(TAG, "exportDbToExcel: ");
-        SQLiteToExcel sqliteToExcel = new SQLiteToExcel(this, "tesco_database.db");
-        sqliteToExcel.exportSingleTable("notification", "queue_data.xls", new SQLiteToExcel.ExportListener() {
-            @Override
-            public void onStart() {
-                Log.d(TAG, "onStart: exportDbToExcel tesco_database");
-            }
-            @Override
-            public void onCompleted(String filePath) {
-
-                Log.d(TAG, "onCompleted: exportDbToExcel "+filePath);
-            }
-            @Override
-            public void onError(Exception e) {
-
-                Log.e(TAG, "onError: exportDbToExcel Exception ",e.getCause());
-            }
-        });
-
     }
-    public void getBarChart(int interval) {
 
-        Log.d(TAG, "Token for my GCM Listener is : " + interval);
+
+    public void getBarChart(int interval, String queueName) {
+
+        Log.d(TAG, "Token for my GCM Listener is : " + interval+" , StoreType "+preference.getPref("StoreType"));
 
         RetrofitInstance.getInstance(this)
                 .getRestAdapter()
-                .getQueues(interval,"","")
+                .getQueues(interval, queueName,preference.getPref("StoreType"))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<GraphModel>() {
@@ -291,39 +261,39 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e(TAG, "onError: " + e.getMessage());
+                        Log.e(TAG, "onError: Throwable " + e.getMessage());
 
                     }
 
                     @Override
                     public void onNext(GraphModel graphModel) {
-                        //Toast.makeText(MainActivity.this, "Chart Updated ",Toast.LENGTH_SHORT).show();
-                        setUpChart(graphModel.getQueue());
+                        //Toast.makeText(QueueActivity1.this, "Chart Updated ",Toast.LENGTH_SHORT).show();
 
+                        setData(5, 9, graphModel.getQueue());
+                        //setBars(chart,graphModel.getQueue());
 
                     }
                 });
 
     }
 
-    void setUpChart(List<Queue> list) {
+    void setUpChart(@NonNull BarChart chart) {
 
-        setChartConfiguration();
-        removeYAxisAndXAxisChartBg();
-        setYAxis();
-        setXAxis();
-        setLegend();
-        setBars(list);
+        setChartConfiguration(chart);
+        removeYAxisAndXAxisChartBg(chart);
+        setYAxis(chart);
+        setXAxis(chart);
+        setLegend(chart);
+
     }
 
 
-    void setChartConfiguration() {
+    void setChartConfiguration(@NonNull BarChart chart) {
 
-        chart.setOnChartValueSelectedListener(this);
-        chart.getDescription().setEnabled(false);
+
         chart.setMaxVisibleValueCount(40);
-        chart.setPinchZoom(false);
-        chart.setDoubleTapToZoomEnabled(false);
+        chart.setPinchZoom(true);
+        chart.setDoubleTapToZoomEnabled(true);
         chart.setDrawGridBackground(false);
         chart.setDrawBarShadow(false);
         chart.setDrawValueAboveBar(true);
@@ -338,9 +308,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         chart.getXAxis().setGranularity(1f);
         chart.getXAxis().setGranularityEnabled(true);
 
+        chart.getDescription().setEnabled(false);
+
+
     }
 
-    void removeYAxisAndXAxisChartBg() {
+    void removeYAxisAndXAxisChartBg(@NonNull BarChart chart) {
         // Remove the grid line from background
         chart.getAxisLeft().setDrawGridLines(false);
         chart.getXAxis().setDrawGridLines(false);
@@ -356,7 +329,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     }
 
 
-    void setLegend() {
+    void setLegend(@NonNull BarChart chart) {
+
         Legend l = chart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
@@ -368,33 +342,81 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         l.setEnabled(false);
     }
 
-    void setYAxis() {
+    void setYAxis(@NonNull BarChart chart) {
+
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setDrawLabels(true);
-        leftAxis.setLabelCount(1, false);
+        leftAxis.setLabelCount(8, false);
         leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
-        leftAxis.setSpaceTop(15f);
+        leftAxis.setDrawTopYLabelEntry(true);
+        //leftAxis.setSpaceTop(15f);
         leftAxis.setDrawGridLines(true);
         //leftAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
-        //leftAxis.setValueFormatter(new MyValueFormatter(""));
-        leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+        leftAxis.setValueFormatter(new MyValueFormatter(""));
+        //leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
         chart.getAxisRight().setEnabled(false);
 
     }
 
-    void setXAxis() {
+    void setXAxis(@NonNull BarChart chart) {
+
         XAxis xLabels = chart.getXAxis();
-        xLabels.setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
+        //xLabels.setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
         xLabels.setPosition(XAxis.XAxisPosition.BOTTOM);
     }
 
 
-    void setBars(List<Queue> queues) {
+    private void setData(int count, float range, List<Queue> queues) {
 
         ArrayList<BarEntry> values = new ArrayList<>();
         readBarGraphData(values, queues);
+
+        MyBarDataSet set1;
+
+        if (chart.getData() != null &&
+                chart.getData().getDataSetCount() > 0) {
+            set1 = (MyBarDataSet) chart.getData().getDataSetByIndex(0);
+            set1.setValues(values);
+            chart.getData().notifyDataChanged();
+            chart.notifyDataSetChanged();
+
+        } else {
+            set1 = new MyBarDataSet(values, "The year 2017");
+
+            set1.setDrawIcons(false);
+            set1.setColors(getColors());
+
+            ArrayList<IBarDataSet> dataSets = new ArrayList<>();
+            dataSets.add(set1);
+
+            BarData data = new BarData(dataSets);
+            data.setValueTextSize(10f);
+            //data.setValueTypeface(tfLight);
+            data.setBarWidth(0.9f);
+            data.setValueFormatter(new MyValueFormatter(""));
+            chart.setData(data);
+            chart.invalidate();
+        }
+    }
+
+
+    void setBars(@NonNull BarChart chart, List<Queue> queues) {
+
+        ArrayList<BarEntry> values = new ArrayList<>();
+
+        float start = 1f;
+        for (int i = (int) start; i < start + 5; i++) {
+            float val = (float) (Math.random() * (9 + 1));
+
+            if (Math.random() * 100 < 25) {
+                values.add(new BarEntry(i, val));
+            } else {
+                values.add(new BarEntry(i, val));
+            }
+        }
+        //readBarGraphData(values, queues);
         //readBarGraphDataLocal(values,queues);
-        ArrayList<String> xValues = new ArrayList<>();
+        //ArrayList<String> xValues = new ArrayList<>();
 
         MyBarDataSet set1;
 
@@ -406,147 +428,64 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             chart.getData().notifyDataChanged();
             chart.notifyDataSetChanged();
         } else {
-            set1 = new MyBarDataSet(values, "");
-            set1.setDrawIcons(false);
-
-            set1.setColors(getColors());
-            //set1.setStackLabels(new String[]{"<3", "4", "5",">6"});
-            ArrayList<IBarDataSet> dataSets = new ArrayList<>();
-            dataSets.add(set1);
-            BarData data = new BarData(dataSets);
-
-            data.setValueFormatter(new StackedValueFormatter(true, "", 1));
-            //data.setValueFormatter(new IndexAxisValueFormatter());
-            data.setBarWidth(.40f);
-
-            data.setValueTextColor(Color.TRANSPARENT);
-
-            chart.setData(data);
-        }
-
-        chart.setFitBars(true);
-        chart.invalidate();
-    }
-
-    void setBarsLocal(List<Queue> queues) {
-
-        ArrayList<BarEntry> values = new ArrayList<>();
-        //readBarGraphData(values,queues);
-        readBarGraphDataLocal(values, queues);
-        //ArrayList<String> xValues= new ArrayList<>();
-
-        StackedBarDataset set1;
-
-        if (chart.getData() != null &&
-                chart.getData().getDataSetCount() > 0) {
-
-            set1 = (StackedBarDataset) chart.getData().getDataSetByIndex(0);
+            set1 = new MyBarDataSet(values, "Queue Data");
             set1.setValues(values);
-            chart.getData().notifyDataChanged();
-            chart.notifyDataSetChanged();
-        } else {
-            set1 = new StackedBarDataset(values, "");
             set1.setDrawIcons(false);
-
+            set1.setDrawValues(true);
             set1.setColors(getColors());
             //set1.setStackLabels(new String[]{"<3", "4", "5",">6"});
             ArrayList<IBarDataSet> dataSets = new ArrayList<>();
             dataSets.add(set1);
             BarData data = new BarData(dataSets);
-
+            data.setValueTextSize(10f);
+//            data.setValueTypeface(tfLight);
+            data.setBarWidth(0.9f);
             //data.setValueFormatter(new StackedValueFormatter(true, "", 1));
             data.setValueFormatter(new IndexAxisValueFormatter());
-            data.setBarWidth(.40f);
+            //data.setBarWidth(.40f);
 
-            data.setValueTextColor(Color.TRANSPARENT);
+            //data.setValueTextColor(Color.TRANSPARENT);
+
             chart.setData(data);
+
+
         }
 
-        chart.setFitBars(true);
+        //chart.setFitBars(true);
         chart.invalidate();
     }
-
 
     void readBarGraphData(ArrayList<BarEntry> values, List<Queue> queues) {
 
-        ArrayList<String> xVlaues = new ArrayList<>();
-        Log.d(TAG, "readBarGraphData: " + readJSONFromAsset());
+        ArrayList<String> xValues = new ArrayList<>();
 
-        JSONObject mainObj = null;
-        try {
-            mainObj = new JSONObject(readJSONFromAsset());
+        if (queues != null) {
 
+            for (int i = 0; i < queues.size(); i++) {
 
-            JSONArray list = mainObj.getJSONArray("queue");
+                //JSONObject elem =(JSONObject) list.get(i);
+                Queue elem = queues.get(i);
+                if (elem != null) {
 
+                    xValues.add(elem.getqName());
 
-            if (queues != null) {
+                    //List<Integer> prods = (List<Integer>)queues.get(i);
+                    float val = (float) elem.getQueueNumber();
+                    //JSONArray prods = elem.getJSONArray("queue_number");
+                    BarEntry barEntry = new BarEntry(
+                            i,
+                            val);
+                    //barEntry.setY(val);
 
-                for (int i = 0; i < queues.size(); i++) {
-
-                    //JSONObject elem =(JSONObject) list.get(i);
-                    Queue elem = queues.get(i);
-                    if (elem != null) {
-
-                        xVlaues.add(elem.getqName());
-
-                        //List<Integer> prods = (List<Integer>)queues.get(i);
-                        float val = (float) elem.getQueueNumber();
-                        //JSONArray prods = elem.getJSONArray("queue_number");
-                        BarEntry barEntry = new BarEntry(
-                                i,
-                                val);
-                        barEntry.setY(val);
-
-                        values.add(barEntry);
-                    }
+                    values.add(barEntry);
                 }
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
-        xAxisValues = xVlaues;
+
+        xAxisValues = xValues;
 
         chart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
-        //chart.getAxisLeft().setValueFormatter(new IndexAxisValueFormatter());
-        //chart.getAxisLeft().setValueFormatter(new IndexAxisValueFormatter());
-
-    }
-
-    void readBarGraphDataLocal(ArrayList<BarEntry> values, List<Queue> queues) {
-        try {
-
-            ArrayList<String> xVlaues = new ArrayList<>();
-            JSONObject mainObj = new JSONObject(readJSONFromAsset());
-
-            JSONArray list = mainObj.getJSONArray("queue");
-            if (list != null) {
-
-                for (int i = 0; i < list.length(); i++) {
-
-                    JSONObject elem = list.getJSONObject(i);
-                    if (elem != null) {
-
-                        xVlaues.add(elem.getString("qText"));
-                        JSONArray prods = elem.getJSONArray("queue_number");
-                        float[] q1Vals = new float[prods.length()];
-                        for (int j = 0; j < prods.length(); j++) {
-                            q1Vals[j] = prods.optInt(j);
-                            BarEntry barEntry = new BarEntry(
-                                    i,
-                                    q1Vals,
-                                    getResources().getDrawable(R.drawable.ic_launcher_foreground));
-                            values.add(barEntry);
-                        }
-                    }
-                }
-            }
-            xAxisValues = xVlaues;
-            chart.getXAxis().setValueFormatter(new com.github.mikephil.charting.formatter.IndexAxisValueFormatter(xAxisValues));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
+        chart.invalidate();
     }
 
     String myNotification = "";
@@ -555,12 +494,11 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         // {"queue":[{"queue_number":[1,2,3,4],"qText":"1-4"},{"queue_number":[5,6,7,8],"qText":"5-9"},{"queue_number":[9,10,11,12],"qText":"9-12"},{"queue_number":[1,2,3,4],"qText":"12-15"}]}
         myNotification = notificationData;
         Log.d(TAG, "notificationData: " + notificationData);
-        //setUpChart();
     }
 
-    int time = 0;
 
-    public String readJSONFromAsset() {
+
+    /*public String readJSONFromAsset() {
         String json;
         try {
             String fileName = "graphFile1min.json";
@@ -579,27 +517,23 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             InputStream is = getAssets().open(fileName);
             int size = is.available();
             byte[] buffer = new byte[size];
+            //noinspection ResultOfMethodCallIgnored
             is.read(buffer);
             is.close();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 json = new String(buffer, StandardCharsets.UTF_8);
             } else {
-                json = new String(buffer, "UTF-8");
+                json = new String(buffer, getResources().getString(R.string.utf));
             }
-            //json = myNotification;
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;
         }
         return json;
-    }
+    }*/
 
     private int[] getColors() {
 
-        // have as many colors as stack-values per entry
-        //   int[] colors = new int[4];
-
-        //System.arraycopy(MATERIAL_COLORS, 0, colors, 0, 6);
         return MATERIAL_COLORS;
     }
 
@@ -633,10 +567,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     protected void onResume() {
         super.onResume();
         observeData();
-        //getBarChart(1);
-        /*LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
-                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));*/
-        registerUIBroadCastReceiver(uiBroadCastReceiver, TescoApp.UI_BROADCAST_RECEIVER_NAME);
+
+
+        //getBarChart(1,queueName);
+        LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
+                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
+        registerUIBroadCastReceiver(uiBroadCastReceiver);
     }
 
     @Override
@@ -651,7 +587,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     protected void onDestroy() {
         super.onDestroy();
         Log.e(TAG, "Inside onDestroy");
-        unregisterCallback(uiBroadCastReceiver);
+        //unregisterCallback(uiBroadCastReceiver);
 
     }
 
@@ -675,15 +611,14 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         return true;
     }
 
-    private void prepareNotificaitonList() {
-        if (mNotfList.size() <= 0) {
+    private void prepareNotificationList() {
+        if (mNotIfList.size() <= 0) {
             mTxtNoHistory.setVisibility(View.VISIBLE);
-            mReclNotfHistory.setVisibility(View.GONE);
+            mRecNotHistory.setVisibility(View.GONE);
         } else {
-            mReclNotfHistory.setVisibility(View.VISIBLE);
+            mRecNotHistory.setVisibility(View.VISIBLE);
             mTxtNoHistory.setVisibility(View.GONE);
         }
-//        setList("notfHistory",mNotfList);
     }
 
 
@@ -694,52 +629,16 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         }
     }
 
-    private void registerUIBroadCastReceiver(BroadcastReceiver receiver, String action) {
+    private void registerUIBroadCastReceiver(BroadcastReceiver receiver) {
         try {
             IntentFilter filter = new IntentFilter();
-            filter.addAction(action);
+            filter.addAction(TescoApp.UI_BROADCAST_RECEIVER_NAME);
             LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
-
-    public class GcmBroadcastReceiver extends BroadcastReceiver {
-
-        // Incoming Intent key for extended data
-        public static final String KEY_SYNC_REQUEST =
-                "com.example.android.datasync.KEY_SYNC_REQUEST";
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Get a GCM object instance
-            GoogleCloudMessaging gcm =
-                    GoogleCloudMessaging.getInstance(context);
-            // Get the type of GCM message
-            String messageType = gcm.getMessageType(intent);
-            /*
-             * Test the message type and examine the message contents.
-             * Since GCM is a general-purpose messaging system, you
-             * may receive normal messages that don't require a sync
-             * adapter run.
-             * The following code tests for a a boolean flag indicating
-             * that the message is requesting a transfer from the device.
-             */
-            if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)
-                    &&
-                    intent.getBooleanExtra(KEY_SYNC_REQUEST, false)) {
-                /*
-                 * Signal the framework to run your sync adapter. Assume that
-                 * app initialization has already created the account.
-                 */
-                //ContentResolver.requestSync(mAccount, AUTHORITY, null);
-
-            }
-        }
-
-    }
-
 
     private class UIBroadCastReceiver extends BroadcastReceiver {
 
@@ -767,10 +666,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
                 if (!TextUtils.isEmpty(notificationData)) {
 
-//                Toast.makeText(SyncActivity.this,getString(R.string.thresold_msg)+" "+notificationData,Toast.LENGTH_SHORT).show();
                     Log.e("SyncActivity", "Inside Broadcast Receiver : " + notificationData);
 
-                    mTxtNotif.setText(notificationData);
+                    mTxtNotIf.setText(notificationData);
                     notificationData(notificationData);
 
                     Notification n = new Notification();
@@ -780,13 +678,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
                     handler = new Handler();
                     handler.postDelayed(() -> {
-                        Log.e("SyncActivity", "Inside Broadcast Receiver : mNotfList : " + mNotfList.size());
-
-                        if (mNotfList.size() <= 0) {
+                        Log.e("SyncActivity", "Inside Broadcast Receiver : mNotIfList : " + mNotIfList.size());
+                        mNotIfAdapter.notifyDataSetChanged();
+                        if (mNotIfList.size() <= 0) {
                             mTxtNoHistory.setVisibility(View.VISIBLE);
-                            mReclNotfHistory.setVisibility(View.GONE);
+                            mRecNotHistory.setVisibility(View.GONE);
                         } else {
-                            mReclNotfHistory.setVisibility(View.VISIBLE);
+                            mRecNotHistory.setVisibility(View.VISIBLE);
                             mTxtNoHistory.setVisibility(View.GONE);
                         }
                         observeData();
@@ -810,37 +708,11 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     }
 
-    /*public boolean writeToFile(String data) {
-        try {
-
-            File mediaStorageDir = new File(path);
-            // Create the storage directory if it does not exist
-            if (!mediaStorageDir.exists()) {
-                if (!mediaStorageDir.mkdirs()) {
-                    Log.d(TAG, "Oops! Failed create "
-                            + path + " directory");
-                    return false;
-                }
-            }
-
-            File mediaFile = new File(mediaStorageDir.getPath() + File.separator
-                    + "Tesco.txt");
-            mediaFile.createNewFile();
-            FileOutputStream fileOutputStream = new FileOutputStream(mediaFile, false);
-            fileOutputStream.write((data + System.getProperty("line.separator")).getBytes());
-            fileOutputStream.close();
-
-            return true;
-        } catch (Exception ex) {
-            Log.d(TAG, ex.getMessage());
-        }
-        return false;
-    }*/
 
     void setTimeSpinner() {
 
         timeSpinner.setOnItemSelectedListener(this);
-        ArrayAdapter timeAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, timeSpinnerValues);
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, timeSpinnerValues);
         timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //Setting the ArrayAdapter data on the Spinner
         timeSpinner.setAdapter(timeAdapter);
@@ -851,34 +723,32 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
 
-        /*if (position == 1) {
+        if (position == 1) {
             time = 1;
-            mService.requestLocationUpdates();
-            mService.setTimeInterval(time);
-
-
-            //setDataInterval(time);
-            setAlarm(time);
-            getBarChart(time);
+            //mService.setTimeInterval(time);
+            //setAlarm(time);
+            getBarChart(time, queueName);
         } else if (position == 2) {
             time = 2;
-            mService.setTimeInterval(time);
-            //setDataInterval(time);
-            setAlarm(time);
-            getBarChart(time);
+            //mService.setTimeInterval(time);
+            //setAlarm(time);
+            getBarChart(time, queueName);
         } else if (position == 3) {
             time = 5;
-            mService.setTimeInterval(time);
-            //setDataInterval(time);
-            setAlarm(time);
-            getBarChart(time);
+            //mService.setTimeInterval(time);
+            //setAlarm(time);
+            getBarChart(time, queueName);
         } else if (position == 4) {
-            time = 10;
+            //time = 10;
+
+            //setAlarm(time);
+            getBarChart(time, queueName);
+        }
+        if(mService != null){
+            mService.requestLocationUpdates();
             mService.setTimeInterval(time);
-            //setDataInterval(time);
-            setAlarm(time);
-            getBarChart(time);
-        }*/
+        }
+
     }
 
     @Override
@@ -890,9 +760,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     protected void onStart() {
         super.onStart();
 
-        /*LocalBroadcastManager.getInstance(this).registerReceiver((myReceiver),
+        LocalBroadcastManager.getInstance(this).registerReceiver((myReceiver),
                 new IntentFilter(ACTION_RESP)
-        );*/
+        );
         // Bind to the service. If the service is in foreground mode, this signals to the service
         // that since this activity is in the foreground, the service can exit foreground mode.
         bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
@@ -929,10 +799,61 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             //Location location = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
 
             Log.d(TAG, "onReceive: Synced With Server " + time);
-            //getBarChart(time);
+            getBarChart(time, queueName);
 
 
         }
+    }
+
+    private void exportData(List<Notification> notificationList) {
+
+        File sd = Environment.getExternalStorageDirectory();
+        String csvFile = "QueueData.xls";
+        File directory = new File(sd.getAbsolutePath());
+        //create directory if not exist
+        if (!directory.isDirectory()) {
+            boolean isSuccess = directory.mkdirs();
+            Log.d(TAG, "exportData: directory.mkdirs" + isSuccess);
+        }
+        try {
+
+            //file path
+            File file = new File(directory, csvFile);
+            WorkbookSettings wbSettings = new WorkbookSettings();
+            wbSettings.setLocale(new Locale("en", "EN"));
+            WritableWorkbook workbook;
+            workbook = Workbook.createWorkbook(file, wbSettings);
+            //Excel sheet name. 0 represents first sheet
+            WritableSheet sheet = workbook.createSheet("QueueTestCases", 0);
+            // column and row
+            sheet.addCell(new Label(0, 0, "Queue Text"));
+            sheet.addCell(new Label(1, 0, "Time Stamp"));
+            int i = 0;
+            Log.d(TAG, "exportData: " + viewModel.getAllWords().getValue());
+            for (Notification n : notificationList) {
+                Log.d(TAG, "exportData: " + n.getNotificationText());
+                i++;
+                String name = n.getNotificationText();
+                String date = getDate(n.getDate());
+                sheet.addCell(new Label(0, i, name));
+                sheet.addCell(new Label(1, i, date));
+            }
+            workbook.write();
+            workbook.close();
+            Toast.makeText(getApplication(),
+                    "Data Exported in a Excel Sheet", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "exportData: ", e.getCause());
+        }
+    }
+
+    private String getDate(long date) {
+
+        SimpleDateFormat format = new SimpleDateFormat("HH:MM:SS", Locale.ENGLISH);
+        return format.format(new Date(date));
+
     }
 
 }

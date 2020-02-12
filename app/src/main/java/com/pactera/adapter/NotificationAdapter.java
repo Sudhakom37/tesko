@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.pactera.model.Notification;
-import com.pactera.tesko.MainActivity;
 import com.pactera.tesko.R;
 
 import java.util.List;
@@ -20,21 +18,18 @@ import java.util.List;
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.MyViewHolder> {
 
     private List<String> notificationsList;
-    private MainActivity mMainActivity;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title;
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        TextView title;
 
-        public MyViewHolder(View view) {
+        MyViewHolder(View view) {
             super(view);
-            title = (TextView) view.findViewById(R.id.title);
+            title =  view.findViewById(R.id.title);
         }
     }
 
-
-    public NotificationAdapter(MainActivity mainActivity, List<String> notificationsList) {
+    public NotificationAdapter(List<String> notificationsList) {
         this.notificationsList = notificationsList;
-        mMainActivity = mainActivity;
     }
 
     @Override

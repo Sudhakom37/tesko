@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 public class Notification {
 
 
-
     @PrimaryKey
     @NonNull
     @ColumnInfo(name = "text")

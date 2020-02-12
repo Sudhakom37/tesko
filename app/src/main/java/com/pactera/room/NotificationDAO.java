@@ -12,16 +12,16 @@ import java.util.List;
 
 @Dao
 public interface NotificationDAO {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    public void insert(Notification... contacts);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insert(Notification... contacts);
  
     @Update
-    public void update(Notification... contacts);
+    void update(Notification... contacts);
  
     @Delete
-    public void delete(Notification contact);
+    void delete(Notification contact);
 
     @Query("SELECT * FROM notification ORDER BY date DESC limit 5 ")
-    public LiveData<List<Notification>> getContacts();
+    LiveData<List<Notification>> getContacts();
 
 }

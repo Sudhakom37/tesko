@@ -41,4 +41,5 @@ public class MyBarDataSet extends BarDataSet {
         this.yVals = values;
         Log.d(TAG, "setValues: "+values);
     }
+
 }

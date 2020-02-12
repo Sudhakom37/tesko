@@ -8,7 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.ImageView;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.Legend;
@@ -19,6 +19,8 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.pactera.Util.MySharedPreference;
+import com.pactera.Util.PrefKeys;
 import com.pactera.Util.StackedValueFormatter;
 import com.pactera.api.RetrofitInstance;
 import com.pactera.custom.MyBarDataSet;
@@ -26,10 +28,6 @@ import com.pactera.model.GraphModel;
 import com.pactera.model.Queue;
 import com.pactera.tesko.QueueAnalysisActivity;
 import com.pactera.tesko.R;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,15 +46,20 @@ public class ThirdFragment extends Fragment {
     private static final String TAG = "ThirdFragment";
     private BarChart chart;
     List<String> xAxisValues;
+    ImageView ivRefresh;
     private QueueAnalysisActivity mQueueAnalysisActivity;
+    MySharedPreference preference;
+    String queueName =" ";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.frag_three, container, false);
-
+        ivRefresh = rootView.findViewById(R.id.iv_refresh);
         mQueueAnalysisActivity = ((QueueAnalysisActivity) getActivity());
+        preference = new MySharedPreference(getActivity());
+        queueName = preference.getPref(PrefKeys.QUEUE_NAME);
         init(rootView);
-
+        ivRefresh.setOnClickListener(view -> getBarChart(1,queueName));
         return rootView;
     }
 
@@ -75,7 +78,7 @@ public class ThirdFragment extends Fragment {
     private void init(View rootView) {
         chart = rootView.findViewById(R.id.barChartAlert);
 
-        getBarChart(1);
+        getBarChart(1,queueName);
         //setAlertBarData(11, 10,null);
     }
 
@@ -223,13 +226,13 @@ public class ThirdFragment extends Fragment {
         }
     }*/
 
-    public void getBarChart(int interval) {
+    public void getBarChart(int interval,String queueName) {
 
         Log.d(TAG, "Token for my GCM Listener is : " + interval);
 
         RetrofitInstance.getInstance(getActivity())
                 .getRestAdapter()
-                .getQueues(interval)
+                .getQueues1to15(interval,queueName,preference.getPref("StoreType"))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<GraphModel>() {
@@ -274,7 +277,7 @@ public class ThirdFragment extends Fragment {
         chart.setOnChartValueSelectedListener(null);
         chart.getDescription().setEnabled(false);
         chart.setMaxVisibleValueCount(40);
-        chart.setPinchZoom(false);
+        chart.setPinchZoom(true);
         chart.setDoubleTapToZoomEnabled(false);
         chart.setDrawGridBackground(false);
         chart.setDrawBarShadow(false);
@@ -287,7 +290,7 @@ public class ThirdFragment extends Fragment {
         chart.getAxisLeft().setAxisLineColor(rgb("#000000"));
         chart.getXAxis().setAxisLineColor(rgb("#000000"));
 
-        int maxCapacity = 6;
+        int maxCapacity = 3;
         LimitLine ll;
         ll = new LimitLine(maxCapacity, "");
         ll.setLineWidth(3f);
@@ -296,7 +299,7 @@ public class ThirdFragment extends Fragment {
         ll.setLineColor(mQueueAnalysisActivity.getResources().getColor(R.color.green));
         chart.getAxisLeft().addLimitLine(ll);
 
-        ll = new LimitLine(3, "");
+        ll = new LimitLine(6, "");
         ll.setLineWidth(3f);
 //        ll.setTextSize(12f); // To add text above line
 //        ll.enableDashedLine(2f, 2f, 0); // To add dash line
@@ -348,7 +351,7 @@ public class ThirdFragment extends Fragment {
     void setYAxis() {
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setDrawLabels(true);
-        leftAxis.setLabelCount(1, false);
+        leftAxis.setLabelCount(8, false);
         leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
         leftAxis.setSpaceTop(15f);
         leftAxis.setDrawGridLines(true);
@@ -371,7 +374,7 @@ public class ThirdFragment extends Fragment {
 
         readBarGraphData(values, queues);
         //readBarGraphDataLocal(values,queues);
-        ArrayList<String> xValues = new ArrayList<>();
+        //ArrayList<String> xValues = new ArrayList<>();
 
         MyBarDataSet set1;
 
@@ -409,7 +412,7 @@ public class ThirdFragment extends Fragment {
 
         ArrayList<String> xVlaues = new ArrayList<>();
 
-        JSONObject mainObj = null;
+        //JSONObject mainObj = null;
         try {
             if (queues != null) {
 

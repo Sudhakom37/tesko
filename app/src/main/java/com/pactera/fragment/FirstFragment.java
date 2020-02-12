@@ -10,8 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
@@ -22,6 +22,8 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.MPPointF;
+import com.pactera.Util.MySharedPreference;
+import com.pactera.Util.PrefKeys;
 import com.pactera.api.RetrofitInstance;
 import com.pactera.model.GraphModel;
 import com.pactera.model.Queue;
@@ -29,6 +31,7 @@ import com.pactera.tesko.QueueAnalysisActivity;
 import com.pactera.tesko.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import rx.Subscriber;
@@ -43,15 +46,20 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
     private static final String TAG = "FirstFragment";
     private PieChart mPieNoOfPeople;
     private Spinner mSpinner;
+    ImageView ivRefresh;
     int time;
+    String queueName = " ";
+    MySharedPreference preference;
     protected final String[] mNoOfPeopleArray = new String[]{
             "Q1", "Q2", "Q3", "Q4"
     };
-
+    ArrayList<String> mNoOfPeopleArrayList = new ArrayList<>();
     int [] values = new int[]{
             20,30,35,15
     };
     ArrayList<Integer> valuesList = new ArrayList<>();
+    ArrayList<Queue> sortedValuesList = new ArrayList<>();
+
     private QueueAnalysisActivity mQueueAnalysisActivity;
 
     @Override
@@ -65,7 +73,9 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
 
         mSpinner =  rootView.findViewById(R.id.spnerInterval);
         mPieNoOfPeople = rootView.findViewById(R.id.noOfPeople);
-
+        ivRefresh = rootView.findViewById(R.id.iv_refresh);
+        preference = new MySharedPreference(getActivity());
+        queueName = preference.getPref(PrefKeys.QUEUE_NAME);
         mSpinner.setOnItemSelectedListener(this);
 
         // Spinner Drop down elements
@@ -84,6 +94,8 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
 
         // attaching data adapter to spinner
         mSpinner.setAdapter(dataAdapter);
+
+        ivRefresh.setOnClickListener(view -> getAnalytics(time,queueName));
         //init();
         return rootView;
     }
@@ -122,26 +134,26 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
             case 0:
                 time = 1;
                 //initPieChartForNumbOfPeople();
-                getAnalytics(time);
+                getAnalytics(time,queueName);
                 break;
             case 1:
                 time = 5;
-                getAnalytics(time);
+                getAnalytics(time,queueName);
                 break;
             case 2:
                 time = 30;
-                getAnalytics(time);
+                getAnalytics(time,queueName);
                 break;
             case 3:
                 time = 180;
-                getAnalytics(time);
+                getAnalytics(time,queueName);
                 break;
             case 4:
                 time = 24;
-                getAnalytics(time);
+                getAnalytics(time,queueName);
                 break;
             default:
-                //getAnalytics(time);
+                //getAnalytics(time,queueName);
                 break;
         }
         // Showing selected spinner item
@@ -192,12 +204,13 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-
-        l.setDrawInside(true);
+        l.setTextSize(14f);
+        l.setFormSize(14f);
+        l.setDrawInside(false);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(10f);
         l.setYOffset(10f);
-        l.setEnabled(false);  // To hide/show Top hint square item in mPieNoOfPeople
+        l.setEnabled(true);  // To hide/show Top hint square item in mPieNoOfPeople
         // entry label styling
         mPieNoOfPeople.setEntryLabelColor(Color.WHITE);
 //        mPieNoOfPeople.setEntryLabelTypeface(tfRegular);
@@ -207,14 +220,23 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
         mPieNoOfPeople.setDrawEntryLabels(false); // To remove labels from piece of pie
         mPieNoOfPeople.getDescription().setEnabled(false); // To remove description of pie
         //setNoOfPeopleData(4, null);
-        getAnalytics(1);
+        getAnalytics(1,queueName);
 
     }
 
     private void setNoOfPeopleData(int count, GraphModel model) {
         valuesList.clear();
-        for(Queue q :model.getQueue()){
-            valuesList.add(Integer.valueOf(q.getPercent_peop()));
+        sortedValuesList.clear();
+        sortedValuesList.addAll(model.getQueue());
+        Collections.sort(sortedValuesList, Collections.reverseOrder());
+        int size =0;
+        for(Queue queue :sortedValuesList){
+            if(size<7){
+                valuesList.add(queue.getPercent_peop());
+                mNoOfPeopleArrayList.add(queue.getqName());
+            }
+            size++;
+
         }
         ArrayList<PieEntry> entries = new ArrayList<>();
 
@@ -226,7 +248,7 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
 //                    getResources().getDrawable(R.drawable.star)));
 
             entries.add(new PieEntry(valuesList.get(i),
-                    mNoOfPeopleArray[i],
+                    mNoOfPeopleArrayList.get(i),
                     getResources().getDrawable(R.drawable.ic_launcher)));
         }
 
@@ -264,6 +286,9 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
                 mQueueAnalysisActivity.getResources().getColor(R.color.pink),
                 mQueueAnalysisActivity.getResources().getColor(R.color.gray),
                 mQueueAnalysisActivity.getResources().getColor(R.color.sky_blue),
+                mQueueAnalysisActivity.getResources().getColor(R.color.red),
+                mQueueAnalysisActivity.getResources().getColor(R.color.green),
+                mQueueAnalysisActivity.getResources().getColor(R.color.amber),
         };
 
         for (int c : EMP_EMPMATERIAL_COLORS1)
@@ -287,10 +312,10 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
         mPieNoOfPeople.invalidate();
     }
 
-    private void getAnalytics(int interval){
+    private void getAnalytics(int interval,String queueName){
         Log.d(TAG, "getAnalytics: interval "+interval);
         RetrofitInstance.getInstance(getActivity()).getRestAdapter()
-                .getAnalytics(interval)
+                .getAnalytics(interval,queueName,preference.getPref(PrefKeys.StoreType))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<GraphModel>() {
@@ -308,6 +333,8 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
                     @Override
                     public void onNext(GraphModel graphModel) {
                         Log.d(TAG, "onNext: graphModel"+graphModel.getQueue());
+
+
                         setNoOfPeopleData(4, graphModel);
                     }
                 });

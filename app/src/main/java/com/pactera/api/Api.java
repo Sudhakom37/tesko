@@ -13,13 +13,21 @@ import retrofit2.http.Query;
 import rx.Observable;
 
 public interface Api {
+
     @POST("api/apiuser")
     Observable<Success> sendFCMToken(@Body() JsonObject object);
+
     @GET("api/chatbot")
-    Observable<GraphModel> getQueues(@Query("interval") int interval);
+    Observable<GraphModel> getQueues(@Query("interval") int interval,@Query("Queue") String queueName,@Query("storetype") String storeType);
+
+    @GET("api/home")
+    Observable<GraphModel> getQueues1to15(@Query("interval") int interval,@Query("Queue") String queueName,@Query("storetype") String storeType);
+
+
     @GET("api/apianalytics")
-    Observable<GraphModel> getAnalytics(@Query("interval") int interval);
+    Observable<GraphModel> getAnalytics(@Query("interval") int interval,@Query("Queue") String queueName,@Query("storetype") String storeType);
+
     @GET("api/analyticsqueu")
-    Observable<IntervalModel> getIntervalData(@Query("threshold") int threshold);
+    Observable<IntervalModel> getIntervalData(@Query("threshold") int threshold,@Query("Queue") String queueName,@Query("storetype") String storeType);
 
 }

@@ -9,11 +9,12 @@
 
 
     <color name="blue_light">#7B95E4</color>
-    <color name="orange">#FFA500</color>
+    <color name="orange">#FF5722</color>
     <color name="black">#000000</color>
     // colors for data set changes
     <color name="amber">#ffbf00</color>
     <color name="red">#FF0000</color>
+    <color name="pactera_red">#dc1e34</color>
     <color name="blue">#3F51B5</color>
     <color name="green">#00FF00</color>
 

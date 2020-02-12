@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -24,7 +25,9 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.pactera.Util.MySharedPreference;
 import com.pactera.Util.MyValueFormatter;
+import com.pactera.Util.PrefKeys;
 import com.pactera.Util.StackedValueFormatter;
 import com.pactera.api.RetrofitInstance;
 import com.pactera.custom.DayAxisValueFormatter;
@@ -53,17 +56,22 @@ public class SecondFragment extends Fragment implements AdapterView.OnItemSelect
     private BarChart mBarChartQueueWait;
     private QueueAnalysisActivity mQueueAnalysisActivity;
     private List<Inter> intervalModels;
+    ImageView ivRefresh;
     ArrayList<String> xAxisValues;
     private BarChart chart ;
-    int time;
+    int time ;
+    MySharedPreference preference;
+    String queueName;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.frag_two, container, false);
         mQueueAnalysisActivity = ((QueueAnalysisActivity) getActivity());
         chart = rootView.findViewById(R.id.barChartQuequeWait);
+        ivRefresh = rootView.findViewById(R.id.iv_refresh);
         Spinner mSpinner = rootView.findViewById(R.id.spnerInterval);
-
+        preference = new MySharedPreference(getActivity());
+        queueName = preference.getPref(PrefKeys.QUEUE_NAME);
         mSpinner.setOnItemSelectedListener(this);
 
         // Spinner Drop down elements
@@ -81,7 +89,8 @@ public class SecondFragment extends Fragment implements AdapterView.OnItemSelect
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //mBarChartQueueWait = rootView.findViewById(R.id.barChartQuequeWait);
         // attaching data adapter to spinner
-        getIntervalData(1);
+        getIntervalData(1,queueName);
+        ivRefresh.setOnClickListener(view -> getIntervalData(time,queueName));
         mSpinner.setAdapter(dataAdapter);
         //init(rootView);
 
@@ -103,7 +112,7 @@ public class SecondFragment extends Fragment implements AdapterView.OnItemSelect
         mBarChartQueueWait = rootView.findViewById(R.id.barChartQuequeWait);
 
         initQueueWaitData();
-        getIntervalData(2);
+        getIntervalData(2,queueName);
 
 
         //setQueueWaitData(4,10);
@@ -314,10 +323,10 @@ public class SecondFragment extends Fragment implements AdapterView.OnItemSelect
         }
     }*/
 
-    private void getIntervalData(int threshold){
+    private void getIntervalData(int threshold,String queueName){
 
         RetrofitInstance.getInstance(getActivity()).getRestAdapter()
-                .getIntervalData(threshold)
+                .getIntervalData(threshold,queueName,preference.getPref(PrefKeys.StoreType))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<IntervalModel>() {
@@ -545,26 +554,26 @@ public class SecondFragment extends Fragment implements AdapterView.OnItemSelect
         switch (i){
             case 0:
                 time = 1;
-                getIntervalData(time);
+                getIntervalData(time,queueName);
                 break;
             case 1:
                 time = 5;
-                getIntervalData(time);
+                getIntervalData(time,queueName);
                 break;
             case 2:
                 time = 30;
-                getIntervalData(time);
+                getIntervalData(time,queueName);
                 break;
             case 3:
                 time = 180;
-                getIntervalData(time);
+                getIntervalData(time,queueName);
                 break;
             case 4:
                 time = 24;
-                getIntervalData(time);
+                getIntervalData(time,queueName);
                 break;
                 default:
-                    getIntervalData(time);
+                    getIntervalData(time,queueName);
                     break;
         }
     }

@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.RingtoneManager;
@@ -29,7 +28,6 @@ import org.json.JSONObject;
 import java.lang.reflect.Array;
 import java.security.SecureRandom;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -99,7 +97,7 @@ public class GalileoListenerService extends GcmListenerService {
 
             final String NOTIFICATION_ID = "NOTIFICATION_ID";
             final String NOTIFICATION_CHANNEL_ID = "tesco_channel_01";
-            final CharSequence NOTIFICATION_CHANNEL_NAME = (CharSequence) getString(R.string.app_name);
+            final CharSequence NOTIFICATION_CHANNEL_NAME = getString(R.string.app_name);
 
             String title = data.getString("message_body");
 //            String body = data.getString("body");

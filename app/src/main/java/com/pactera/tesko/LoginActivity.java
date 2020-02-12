@@ -5,23 +5,32 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.nabinbhandari.android.permissions.PermissionHandler;
 import com.nabinbhandari.android.permissions.Permissions;
+import com.pactera.Util.MySharedPreference;
+import com.pactera.Util.PrefKeys;
 
 import java.util.ArrayList;
 
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
 
     Button submit;
     EditText name;
     EditText pwd;
     boolean isDenied;
+    Spinner sp_store_type;
+    MySharedPreference preference;
+    String[] storeTypes = {"Select Store","hyper","express","super"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,14 +39,39 @@ public class LoginActivity extends AppCompatActivity {
         submit = findViewById(R.id.btn_submit);
         name = findViewById(R.id.et_name);
         pwd = findViewById(R.id.et_pwd);
+        sp_store_type = findViewById(R.id.sp_store_type);
         requestPermissions();
+        preference = new MySharedPreference(this);
+        setTimeSpinner();
+
+
 
 
     }
 
+    void setTimeSpinner() {
+
+        sp_store_type.setOnItemSelectedListener(this);
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, storeTypes);
+        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //Setting the ArrayAdapter data on the Spinner
+        sp_store_type.setAdapter(timeAdapter);
+
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
+        preference.setPref("StoreType",storeTypes[position]);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> arg0) {
+        // TODO Auto-generated method stub
+    }
+
     public void requestPermissions() {
         String[] permissions = {
-                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE
 
 
         };
@@ -74,7 +108,17 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             if (name.getText().toString().equals("Tesco_Express_Bangkok_XXXX23") && pwd.getText().toString().equals("admin")) {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                if(preference.getPref(PrefKeys.StoreType).equalsIgnoreCase(storeTypes[0])){
+                    Toast.makeText(this, "Please Select Store", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if(preference.getPref(PrefKeys.StoreType).equalsIgnoreCase("Express") ){
+                    preference.setPref(PrefKeys.StoreType,storeTypes[2]);
+                    startActivity(new Intent(LoginActivity.this, QueueActivity1.class));
+                }else{
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                }
+
 
             } else {
                 Toast.makeText(LoginActivity.this, "Incorrect Credentials", Toast.LENGTH_SHORT).show();
