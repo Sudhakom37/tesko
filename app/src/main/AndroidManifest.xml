@@ -51,6 +51,7 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".QueueActivity1" />
         <activity android:name=".QueueActivity2" />
+        <activity android:name=".OtpActivity" />
 
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
@@ -97,16 +98,6 @@
             android:enabled="true"
             android:exported="true"
              />
-
-
-        <receiver android:name="com.pactera.receiver.AlarmReceiver"/>
-
-        <receiver android:name="com.pactera.receiver.BootReceiver"
-            android:enabled="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
 
 
 

@@ -18,7 +18,7 @@ public class RetrofitInstance {
 
     private static RetrofitInstance instance;
     private Context mContext;
-    private  static String AUTH_URL = "https://queapi20191118024102.azurewebsites.net/";
+    private  static String AUTH_URL = "http://52.172.157.210:8000/";
 
 
     public RetrofitInstance(Context mContext){

@@ -523,10 +523,10 @@ public class SecondFragment extends Fragment implements AdapterView.OnItemSelect
                     Inter elem = queues.get(i);
                     if(elem != null){
 
-                        xVlaues.add(String.valueOf(elem.getIntervals()+" Min"));
+                        xVlaues.add(elem.getIntervals() + " Min");
 
                         //List<Integer> prods = (List<Integer>)queues.get(i);
-                        float val = Float.valueOf(elem.getNumber());
+                        float val = (float) elem.getNumber();
                         //JSONArray prods = elem.getJSONArray("queue_number");
                         BarEntry barEntry = new BarEntry(
                                 i,

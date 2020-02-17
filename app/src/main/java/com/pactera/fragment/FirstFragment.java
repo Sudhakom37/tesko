@@ -315,7 +315,7 @@ public class FirstFragment extends Fragment implements AdapterView.OnItemSelecte
     private void getAnalytics(int interval,String queueName){
         Log.d(TAG, "getAnalytics: interval "+interval);
         RetrofitInstance.getInstance(getActivity()).getRestAdapter()
-                .getAnalytics(interval,queueName,preference.getPref(PrefKeys.StoreType))
+                .getAnalytics(interval,queueName,preference.getPref(PrefKeys.StoreType).toLowerCase())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<GraphModel>() {

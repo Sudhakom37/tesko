@@ -14,7 +14,7 @@ public class Queue implements Comparable<Queue>{
     @SerializedName("count_peop")
     private int queueNumber;
     @Expose
-    @SerializedName("queue_Name")
+    @SerializedName("queue_name")
     private String qName;
     @Expose
     @SerializedName("percent_peop")

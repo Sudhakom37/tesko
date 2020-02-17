@@ -30,7 +30,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     boolean isDenied;
     Spinner sp_store_type;
     MySharedPreference preference;
-    String[] storeTypes = {"Select Store","hyper","express","super"};
+    String[] storeTypes = {"Select Store","Hyper","Express","Extra","Department","Talad"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +52,8 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     void setTimeSpinner() {
 
         sp_store_type.setOnItemSelectedListener(this);
-        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, storeTypes);
-        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, storeTypes);
+        timeAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item);
         //Setting the ArrayAdapter data on the Spinner
         sp_store_type.setAdapter(timeAdapter);
 
@@ -61,7 +61,13 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
-        preference.setPref("StoreType",storeTypes[position]);
+        if(position!=0){
+            preference.setPref("StoreType",storeTypes[2]);
+
+        }else{
+            preference.setPref("StoreType",storeTypes[position]);
+        }
+
     }
 
     @Override
@@ -112,13 +118,8 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
                     Toast.makeText(this, "Please Select Store", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(preference.getPref(PrefKeys.StoreType).equalsIgnoreCase("Express") ){
-                    preference.setPref(PrefKeys.StoreType,storeTypes[2]);
-                    startActivity(new Intent(LoginActivity.this, QueueActivity1.class));
-                }else{
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                }
 
+                startActivity(new Intent(LoginActivity.this, OtpActivity.class));
 
             } else {
                 Toast.makeText(LoginActivity.this, "Incorrect Credentials", Toast.LENGTH_SHORT).show();

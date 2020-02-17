@@ -3,6 +3,7 @@ package com.pactera.fragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.pactera.Util.MySharedPreference;
+import com.pactera.Util.MyValueFormatter;
 import com.pactera.Util.PrefKeys;
 import com.pactera.Util.StackedValueFormatter;
 import com.pactera.api.RetrofitInstance;
@@ -59,6 +61,7 @@ public class ThirdFragment extends Fragment {
         preference = new MySharedPreference(getActivity());
         queueName = preference.getPref(PrefKeys.QUEUE_NAME);
         init(rootView);
+        setUpChart(chart);
         ivRefresh.setOnClickListener(view -> getBarChart(1,queueName));
         return rootView;
     }
@@ -232,7 +235,7 @@ public class ThirdFragment extends Fragment {
 
         RetrofitInstance.getInstance(getActivity())
                 .getRestAdapter()
-                .getQueues1to15(interval,queueName,preference.getPref("StoreType"))
+                .getQueues1to15(interval,queueName,preference.getPref("StoreType").toLowerCase())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<GraphModel>() {
@@ -254,14 +257,255 @@ public class ThirdFragment extends Fragment {
                         //Toast.makeText(getActivity(), "Chart Updated ", Toast.LENGTH_SHORT).show();
                         Log.d(TAG, "onNext: graphModel.getQueue().toString "+graphModel.getQueue().toString());
                         //setAlertBarData(1,4,graphModel.getQueue());
-                        setUpChart(graphModel.getQueue());
+                        //setUpChart(chart);
+                        setData(5, 9, graphModel.getQueue());
 
 
                     }
                 });
 
     }
-    void setUpChart(List<Queue> list) {
+
+
+    void setUpChart(@NonNull BarChart chart) {
+
+        setChartConfiguration(chart);
+        removeYAxisAndXAxisChartBg(chart);
+        setYAxis(chart);
+        setXAxis(chart);
+        setLegend(chart);
+
+    }
+
+
+    void setChartConfiguration(@NonNull BarChart chart) {
+
+
+        chart.setMaxVisibleValueCount(40);
+        chart.setPinchZoom(true);
+        chart.setDoubleTapToZoomEnabled(true);
+        chart.setDrawGridBackground(false);
+        chart.setDrawBarShadow(false);
+        chart.setDrawValueAboveBar(true);
+        chart.setHighlightFullBarEnabled(false);
+        chart.setExtraBottomOffset(15f);
+        chart.getXAxis().setAxisLineWidth(1f);
+        chart.getAxisLeft().setAxisLineWidth(1f);
+
+        chart.getAxisLeft().setAxisLineColor(rgb("#000000"));
+        chart.getXAxis().setAxisLineColor(rgb("#000000"));
+
+
+        int maxCapacity = 3;
+        LimitLine ll;
+        ll = new LimitLine(maxCapacity, "");
+        ll.setLineWidth(3f);
+//        ll.setTextSize(12f);  // To add text above line
+//        ll.enableDashedLine(2.5f, 1.5f, 0);  // To add dash line
+        ll.setLineColor(mQueueAnalysisActivity.getResources().getColor(R.color.green));
+        chart.getAxisLeft().addLimitLine(ll);
+
+        ll = new LimitLine(6, "");
+        ll.setLineWidth(3f);
+//        ll.setTextSize(12f); // To add text above line
+//        ll.enableDashedLine(2f, 2f, 0); // To add dash line
+        ll.setLineColor(mQueueAnalysisActivity.getResources().getColor(R.color.orange));
+        chart.getAxisLeft().addLimitLine(ll);
+
+
+        ll = new LimitLine(15, "");
+        ll.setLineWidth(3f);
+//        ll.setTextSize(12f); // To add text above line
+//        ll.enableDashedLine(2f, 2f, 0); // To add dash line
+        ll.setLineColor(mQueueAnalysisActivity.getResources().getColor(R.color.red));
+        chart.getAxisLeft().addLimitLine(ll);
+
+        chart.getXAxis().setGranularity(1f);
+        chart.getXAxis().setGranularityEnabled(true);
+
+        chart.getDescription().setEnabled(false);
+
+
+    }
+
+    void removeYAxisAndXAxisChartBg(@NonNull BarChart chart) {
+        // Remove the grid line from background
+        chart.getAxisLeft().setDrawGridLines(false);
+        chart.getXAxis().setDrawGridLines(false);
+
+        YAxis yAxis = chart.getAxisLeft();
+        yAxis.setDrawGridLines(false);
+
+        // Disable the right y axis
+        YAxis rightYAxis = chart.getAxisRight();
+        rightYAxis.setEnabled(false);
+        rightYAxis.setDrawGridLines(false);
+
+    }
+
+
+    void setLegend(@NonNull BarChart chart) {
+
+        Legend l = chart.getLegend();
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        l.setDrawInside(false);
+        l.setFormSize(8f);
+        l.setFormToTextSpace(2f);
+        l.setXEntrySpace(12f);
+        l.setEnabled(false);
+    }
+
+    void setYAxis(@NonNull BarChart chart) {
+
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.setDrawLabels(false);
+        leftAxis.setLabelCount(1, false);
+        leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
+        leftAxis.setDrawTopYLabelEntry(true);
+        leftAxis.setSpaceTop(15f);
+        leftAxis.setDrawGridLines(false);
+        //leftAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
+        leftAxis.setValueFormatter(new MyValueFormatter(""));
+        //leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+        chart.getAxisRight().setEnabled(false);
+
+    }
+
+    void setXAxis(@NonNull BarChart chart) {
+
+        XAxis xLabels = chart.getXAxis();
+        //xLabels.setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
+        xLabels.setPosition(XAxis.XAxisPosition.BOTTOM);
+    }
+
+
+    private void setData(int count, float range, List<Queue> queues) {
+
+        ArrayList<BarEntry> values = new ArrayList<>();
+        readBarGraphData(values, queues);
+
+        MyBarDataSet set1;
+
+        if (chart.getData() != null &&
+                chart.getData().getDataSetCount() > 0) {
+            set1 = (MyBarDataSet) chart.getData().getDataSetByIndex(0);
+            set1.setValues(values);
+            chart.getData().notifyDataChanged();
+            chart.notifyDataSetChanged();
+
+        } else {
+            set1 = new MyBarDataSet(values, "The year 2017");
+
+            set1.setDrawIcons(false);
+            //set1.setColors(getColors());
+
+            ArrayList<IBarDataSet> dataSets = new ArrayList<>();
+            dataSets.add(set1);
+
+            BarData data = new BarData(dataSets);
+            data.setValueTextSize(10f);
+            //data.setValueTypeface(tfLight);
+            data.setBarWidth(0.9f);
+            data.setValueFormatter(new MyValueFormatter(""));
+            chart.setData(data);
+            chart.invalidate();
+        }
+    }
+
+
+    void setBars(@NonNull BarChart chart, List<Queue> queues) {
+
+        ArrayList<BarEntry> values = new ArrayList<>();
+
+        float start = 1f;
+        for (int i = (int) start; i < start + 5; i++) {
+            float val = (float) (Math.random() * (9 + 1));
+
+            if (Math.random() * 100 < 25) {
+                values.add(new BarEntry(i, val));
+            } else {
+                values.add(new BarEntry(i, val));
+            }
+        }
+        //readBarGraphData(values, queues);
+        //readBarGraphDataLocal(values,queues);
+        //ArrayList<String> xValues = new ArrayList<>();
+
+        MyBarDataSet set1;
+
+        if (chart.getData() != null &&
+                chart.getData().getDataSetCount() > 0) {
+
+            set1 = (MyBarDataSet) chart.getData().getDataSetByIndex(0);
+            set1.setValues(values);
+            chart.getData().notifyDataChanged();
+            chart.notifyDataSetChanged();
+        } else {
+            set1 = new MyBarDataSet(values, "Queue Data");
+            set1.setValues(values);
+            set1.setDrawIcons(false);
+            set1.setDrawValues(true);
+            //set1.setColors(getColors());
+            //set1.setStackLabels(new String[]{"<3", "4", "5",">6"});
+            ArrayList<IBarDataSet> dataSets = new ArrayList<>();
+            dataSets.add(set1);
+            BarData data = new BarData(dataSets);
+            data.setValueTextSize(10f);
+//            data.setValueTypeface(tfLight);
+            data.setBarWidth(0.9f);
+            //data.setValueFormatter(new StackedValueFormatter(true, "", 1));
+            data.setValueFormatter(new IndexAxisValueFormatter());
+            //data.setBarWidth(.40f);
+
+            //data.setValueTextColor(Color.TRANSPARENT);
+
+            chart.setData(data);
+
+
+        }
+
+        //chart.setFitBars(true);
+        chart.invalidate();
+    }
+
+    void readBarGraphData(ArrayList<BarEntry> values, List<Queue> queues) {
+
+        ArrayList<String> xValues = new ArrayList<>();
+
+        if (queues != null) {
+
+            for (int i = 0; i < queues.size(); i++) {
+
+                //JSONObject elem =(JSONObject) list.get(i);
+                Queue elem = queues.get(i);
+                if (elem != null) {
+
+                    xValues.add(elem.getqName());
+
+                    //List<Integer> prods = (List<Integer>)queues.get(i);
+                    float val = (float) elem.getQueueNumber();
+                    //JSONArray prods = elem.getJSONArray("queue_number");
+                    BarEntry barEntry = new BarEntry(
+                            i,
+                            val);
+                    //barEntry.setY(val);
+
+                    values.add(barEntry);
+                }
+            }
+        }
+
+        xAxisValues = xValues;
+
+        chart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
+        chart.invalidate();
+    }
+
+
+
+   /* void setUpChart(List<Queue> list) {
 
         setChartConfiguration();
         removeYAxisAndXAxisChartBg();
@@ -351,10 +595,10 @@ public class ThirdFragment extends Fragment {
     void setYAxis() {
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setDrawLabels(true);
-        leftAxis.setLabelCount(8, false);
+        leftAxis.setLabelCount(4, false);
         leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
         leftAxis.setSpaceTop(15f);
-        leftAxis.setDrawGridLines(true);
+        leftAxis.setDrawGridLines(false);
         //leftAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
         //leftAxis.setValueFormatter(new MyValueFormatter(""));
         leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
@@ -395,7 +639,7 @@ public class ThirdFragment extends Fragment {
             dataSets.add(set1);
             BarData data = new BarData(dataSets);
 
-            data.setValueFormatter(new StackedValueFormatter(true, "", 1));
+            data.setValueFormatter(new MyValueFormatter(""));
             //data.setValueFormatter(new IndexAxisValueFormatter());
             data.setBarWidth(.40f);
 
@@ -425,7 +669,7 @@ public class ThirdFragment extends Fragment {
                         xVlaues.add(elem.getqName());
 
                         //List<Integer> prods = (List<Integer>)queues.get(i);
-                        float val = Float.valueOf(elem.getQueueNumber());
+                        float val =(float) elem.getQueueNumber();
                         //JSONArray prods = elem.getJSONArray("queue_number");
                         BarEntry barEntry = new BarEntry(
                                 i,
@@ -446,4 +690,4 @@ public class ThirdFragment extends Fragment {
         //chart.getAxisLeft().setValueFormatter(new IndexAxisValueFormatter());
 
     }
-}
+*/}

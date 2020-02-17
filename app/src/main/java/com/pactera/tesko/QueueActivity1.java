@@ -158,7 +158,7 @@ public class QueueActivity1 extends FragmentActivity implements View.OnClickList
         queue_lessThan_3 = findViewById(R.id.queue_lessthan_3);
         RelativeLayout mRlExit = findViewById(R.id.rlvtExit);
         mRlExit.setOnClickListener(this);
-        queue_lessThan_3.setText("<3");
+        queue_lessThan_3.setText("<=3");
         viewModel = ViewModelProviders.of(this).get(NotificationViewModel.class);
         rl_viewQ1_Q15.setOnClickListener(view -> finish());
         //viewModel.getBarChart("2");
@@ -167,9 +167,11 @@ public class QueueActivity1 extends FragmentActivity implements View.OnClickList
         btnAnalytic = findViewById(R.id.btn_analytic);
         Log.d(TAG, "onCreate: path " + path);
         alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        queueName = getIntent().getStringExtra(PrefKeys.QUEUE_NAME);
-        Log.d(TAG, "onCreate: queueName " + queueName);
+
+
         preference = new MySharedPreference(this);
+        queueName =preference.getPref(PrefKeys.QUEUE_NAME);
+        Log.d(TAG, "onCreate: queueName " + queueName);
         setUpChart(chart);
 
         btnAnalytic.setOnClickListener(view -> startActivity(new Intent(QueueActivity1.this, QueueAnalysisActivity.class)));
@@ -244,11 +246,11 @@ public class QueueActivity1 extends FragmentActivity implements View.OnClickList
 
     public void getBarChart(int interval, String queueName) {
 
-        Log.d(TAG, "Token for my GCM Listener is : " + interval+" , StoreType "+preference.getPref("StoreType"));
+        Log.d(TAG, "Token for my GCM Listener is : " + queueName+" , StoreType "+preference.getPref("StoreType"));
 
         RetrofitInstance.getInstance(this)
                 .getRestAdapter()
-                .getQueues(interval, queueName,preference.getPref("StoreType"))
+                .getQueues1to15(interval, queueName,preference.getPref("StoreType").toLowerCase())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<GraphModel>() {
@@ -345,12 +347,12 @@ public class QueueActivity1 extends FragmentActivity implements View.OnClickList
     void setYAxis(@NonNull BarChart chart) {
 
         YAxis leftAxis = chart.getAxisLeft();
-        leftAxis.setDrawLabels(true);
-        leftAxis.setLabelCount(8, false);
+        leftAxis.setDrawLabels(false);
+        leftAxis.setLabelCount(5, true);
         leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
         leftAxis.setDrawTopYLabelEntry(true);
-        //leftAxis.setSpaceTop(15f);
-        leftAxis.setDrawGridLines(true);
+        leftAxis.setSpaceTop(15f);
+        leftAxis.setDrawGridLines(false);
         //leftAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
         leftAxis.setValueFormatter(new MyValueFormatter(""));
         //leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
@@ -370,7 +372,19 @@ public class QueueActivity1 extends FragmentActivity implements View.OnClickList
 
         ArrayList<BarEntry> values = new ArrayList<>();
         readBarGraphData(values, queues);
+        /*float start = 1f;
 
+        ArrayList<BarEntry> values = new ArrayList<>();
+
+        for (int i = (int) start; i < start + count; i++) {
+            float val = (float) (Math.random() * (range + 1));
+
+            if (Math.random() * 100 < 25) {
+                values.add(new BarEntry(i, val));
+            } else {
+                values.add(new BarEntry(i, val));
+            }
+        }*/
         MyBarDataSet set1;
 
         if (chart.getData() != null &&
