@@ -112,7 +112,7 @@ public class QueueActivity1 extends FragmentActivity implements View.OnClickList
     NotificationViewModel viewModel;
     List<Notification> notificationList;
     TextView queue_lessThan_3;
-    RelativeLayout rl_viewQ1_Q15, rl_viewQ16_30;
+    RelativeLayout rl_viewQ1_Q15, rl_my_hr,rlvtIncActivty;
     AlarmManager alarmManager;
     PendingIntent pendingIntent;
 
@@ -154,7 +154,8 @@ public class QueueActivity1 extends FragmentActivity implements View.OnClickList
         mTxtNoHistory = findViewById(R.id.txtNoHistory);
         mTxtNotIf = findViewById(R.id.txtNotif);
         rl_viewQ1_Q15 = findViewById(R.id.rl_viewQ1_Q15);
-        rl_viewQ16_30 = findViewById(R.id.rl_viewQ16_30);
+        rl_my_hr = findViewById(R.id.rl_my_hr);
+        rlvtIncActivty = findViewById(R.id.rlvtIncActivty);
         queue_lessThan_3 = findViewById(R.id.queue_lessthan_3);
         RelativeLayout mRlExit = findViewById(R.id.rlvtExit);
         mRlExit.setOnClickListener(this);
@@ -173,6 +174,10 @@ public class QueueActivity1 extends FragmentActivity implements View.OnClickList
         queueName =preference.getPref(PrefKeys.QUEUE_NAME);
         Log.d(TAG, "onCreate: queueName " + queueName);
         setUpChart(chart);
+
+        View.OnClickListener onClickListener = view -> startActivity(new Intent(QueueActivity1.this, MyHrActivity.class));
+        rl_my_hr.setOnClickListener(onClickListener);
+        rlvtIncActivty.setOnClickListener(onClickListener);
 
         btnAnalytic.setOnClickListener(view -> startActivity(new Intent(QueueActivity1.this, QueueAnalysisActivity.class)));
         mNotIfList = new ArrayList<>();

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Tesco Lotus</string>
+    <string name="app_name">Large Store</string>
 
     <string name="gcm_project_id">tesco-256810</string>
     <string name="gcm_project_no">736045374388</string>
@@ -11,5 +11,18 @@
     <string name="copy_right_text">Powered by Pactera India Pvt.Ltd</string>
     <string name="location_updated">Location Updated: %1$s</string>
     <string name="utf">UTF-8</string>
+
+
+
+    <string name="myhr1"> Tesco plc (/ˈtɛs.koʊ/) trading as Tesco, is a British multinational groceries and general merchandise retailer with headquarters in Welwyn Garden City, Hertfordshire, England, United Kingdom. It is the third-largest retailer in the world measured by gross revenues and the ninth-largest retailer in the world measured by revenues.</string>
+    <string name="myhr2">It has shops in seven countries across Asia and Europe, and is the market leader of groceries in the UK (where it has a market share of around 28.4%), Ireland, Hungary[6] and Thailand.</string>
+    <string name="myhr3">Tesco was founded in 1919 by Jack Cohen as a group of market stalls.[9] The Tesco name first appeared in 1924, after Cohen purchased a shipment of tea from T. E. Stockwell and combined those initials with the first two letters of his surname, and the first Tesco shop opened in 1931 in Burnt Oak, Barnet.[11][12][13] His business expanded rapidly, and by 1939 he had over 100 Tesco shops across the country.</string>
+    <string name="myhr4"> Countries served by Tesco stores.
+    Originally a UK grocer, Tesco has expanded globally since the early 1990s, with operations in 11 other countries in the world. The company pulled out of the US in 2013, but as of 2018 continues to see growth elsewhere. Since the 1960s, Tesco has diversified into areas such as the retailing of books, clothing, electronics, furniture, toys, petrol, software, financial services, telecoms and internet services. In the 1990s Tesco repositioned itself from being a down-market high-volume low-cost retailer, to one designed to attract a range of social groups by offering products ranging from low-cost "Tesco Value" items (launched 1993[9]) to its "Tesco Finest" range</string>
+    <string name="myhr5">dsfasddsd</string>
+    <string name="myhr6">dsfsdfdvfd </string>
+
+
+
 </resources>
 

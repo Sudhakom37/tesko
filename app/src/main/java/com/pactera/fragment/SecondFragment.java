@@ -326,7 +326,7 @@ public class SecondFragment extends Fragment implements AdapterView.OnItemSelect
     private void getIntervalData(int threshold,String queueName){
 
         RetrofitInstance.getInstance(getActivity()).getRestAdapter()
-                .getIntervalData(threshold,queueName,preference.getPref(PrefKeys.StoreType))
+                .getIntervalData(threshold,queueName,preference.getPref(PrefKeys.StoreType).toLowerCase())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<IntervalModel>() {

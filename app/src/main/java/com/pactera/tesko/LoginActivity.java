@@ -61,12 +61,11 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
-        if(position!=0){
+       /* if(position==2){
             preference.setPref("StoreType",storeTypes[2]);
 
-        }else{
-            preference.setPref("StoreType",storeTypes[position]);
-        }
+        }*/
+        preference.setPref("StoreType",storeTypes[position]);
 
     }
 
@@ -77,8 +76,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
     public void requestPermissions() {
         String[] permissions = {
-                Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE
-
+                Manifest.permission.ACCESS_FINE_LOCATION
 
         };
         Permissions.check(this, permissions, null, null, new PermissionHandler() {
@@ -115,7 +113,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
             if (name.getText().toString().equals("Tesco_Express_Bangkok_XXXX23") && pwd.getText().toString().equals("admin")) {
                 if(preference.getPref(PrefKeys.StoreType).equalsIgnoreCase(storeTypes[0])){
-                    Toast.makeText(this, "Please Select Store", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Please Select Express Store to Continue..", Toast.LENGTH_SHORT).show();
                     return;
                 }
 

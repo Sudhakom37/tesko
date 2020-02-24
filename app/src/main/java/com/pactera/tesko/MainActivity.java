@@ -108,7 +108,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     NotificationViewModel viewModel;
     List<Notification> notificationList;
     TextView queue_lessthan_3;
-    RelativeLayout rl_viewQ1_Q15,rl_viewQ16_30;
+    RelativeLayout rl_viewQ1_Q15,rl_my_hr,rlvtIncActivty;
     Button tv_viewQ1_Q15,tv_viewQ16_30;
     AlarmManager alarmManager;
     PendingIntent pendingIntent;
@@ -149,7 +149,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         mTxtNoHistory = findViewById(R.id.txtNoHistory);
         mTxtNotif = findViewById(R.id.txtNotif);
         rl_viewQ1_Q15 = findViewById(R.id.rl_viewQ1_Q15);
-        rl_viewQ16_30 = findViewById(R.id.rl_viewQ16_30);
+        rl_my_hr = findViewById(R.id.rl_my_hr);
+        rlvtIncActivty = findViewById(R.id.rlvtIncActivty);
         tv_viewQ1_Q15 = findViewById(R.id.tv_viewQ1_Q15);
         tv_viewQ16_30 = findViewById(R.id.tv_viewQ16_30);
         queue_lessthan_3 = findViewById(R.id.queue_lessthan_3);
@@ -191,6 +192,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
         });
 
+         rl_my_hr.setOnClickListener(view -> startActivity(new Intent(MainActivity.this,MyHrActivity.class)));
+         rlvtIncActivty.setOnClickListener(view -> startActivity(new Intent(MainActivity.this,MyHrActivity.class)));
 
         Intent intent = getIntent();
         if (intent != null) {

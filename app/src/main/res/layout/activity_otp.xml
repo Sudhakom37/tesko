@@ -99,6 +99,8 @@
                     android:layout_width="0dp"
                     android:layout_height="32dp"
                     android:layout_weight="1.1"
+                    android:inputType="numberPassword"
+                    android:paddingStart="10dp"
                     android:gravity="center_vertical"
                     android:background="@drawable/edittext_backround"
                     />
@@ -202,6 +204,7 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 android:text="Login"
+
                 android:layout_gravity="end"
                 android:background="@drawable/rect_orange"
                 android:textColor="#fff"

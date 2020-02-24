@@ -1,5 +1,6 @@
 package com.pactera.tesko;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.support.v4.app.FragmentActivity;
@@ -29,7 +30,7 @@ public class QueueAnalysisActivity extends FragmentActivity implements ActionBar
     private RadioGroup mPageGroup;
     private ViewPager viewPager;
     private Spinner mSpinner;
-    RelativeLayout rlvtHome,rlvtExit;
+    RelativeLayout rlvtHome,rlvtExit,rl_my_hr,rlvtIncActivty;
     QueueAnalysisAdapter adapter;
     TextView tv_view_msg ;
     MySharedPreference preference;
@@ -41,6 +42,8 @@ public class QueueAnalysisActivity extends FragmentActivity implements ActionBar
         tv_view_msg = findViewById(R.id.tv_view_msg);
         viewPager =  findViewById(R.id.viewpager);
         rlvtHome = findViewById(R.id.rl_viewQ1_Q15);
+        rl_my_hr = findViewById(R.id.rl_my_hr);
+        rlvtIncActivty = findViewById(R.id.rlvtIncActivty);
         adapter = new QueueAnalysisAdapter(getSupportFragmentManager());
         rlvtExit = findViewById(R.id.rlvtExit);
         viewPager.setAdapter(adapter);
@@ -56,6 +59,9 @@ public class QueueAnalysisActivity extends FragmentActivity implements ActionBar
         mSpinner =  findViewById(R.id.spnerInterval);
 
         mSpinner.setOnItemSelectedListener(this);
+
+        rl_my_hr.setOnClickListener(view -> startActivity(new Intent(QueueAnalysisActivity.this,MyHrActivity.class)));
+        rlvtIncActivty.setOnClickListener(view -> startActivity(new Intent(QueueAnalysisActivity.this,MyHrActivity.class)));
 
         if(preference.getPref(PrefKeys.QUEUE_NAME).equalsIgnoreCase("Q1")){
             tv_view_msg.setBackgroundColor(getResources().getColor(R.color.blue));

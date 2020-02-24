@@ -172,7 +172,7 @@ public class LocationUpdatesService extends Service {
                     new NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT);
 
             // Set the Notification Channel for the Notification Manager.
-            mNotificationManager.createNotificationChannel(mChannel);
+            //mNotificationManager.createNotificationChannel(mChannel);
         }
     }
 
@@ -315,7 +315,7 @@ public class LocationUpdatesService extends Service {
         Intent broadcastIntent = new Intent();
         broadcastIntent.putExtra("location",""+text);
         broadcastIntent.setAction(ACTION_RESP);
-        broadcaster.sendBroadcast(broadcastIntent);
+        //broadcaster.sendBroadcast(broadcastIntent);
 
         return builder.build();
     }

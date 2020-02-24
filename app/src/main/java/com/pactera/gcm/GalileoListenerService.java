@@ -139,7 +139,7 @@ public class GalileoListenerService extends GcmListenerService {
                     /*.setContentText(data.get("body").toString())*/
                     .setStyle(bigTextStyle)
                     .setAutoCancel(true)
-                    .setSound(defaultSoundUri)
+                    .setSound(null)
                     .setContentIntent(pendingIntent)
                     .build();
 

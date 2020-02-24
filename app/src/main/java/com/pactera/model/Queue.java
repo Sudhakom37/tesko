@@ -11,7 +11,7 @@ import static java.lang.Integer.compare;
 
 public class Queue implements Comparable<Queue>{
     @Expose
-    @SerializedName("count_peop")
+    @SerializedName("people_count")
     private int queueNumber;
     @Expose
     @SerializedName("queue_name")

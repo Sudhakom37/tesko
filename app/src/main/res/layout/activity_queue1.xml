@@ -462,7 +462,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/rl_viewQ16_30"
+            android:id="@+id/rl_my_hr"
             android:layout_width="0dp"
             android:layout_height="32dp"
             android:layout_marginRight="10dp"
